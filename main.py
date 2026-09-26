@@ -1,16 +1,8 @@
-from dotenv import load_dotenv
+from config import get_key
 from typesafe_sdk import Choice, Noul, TypeSafeClient
-load_dotenv()
 
 _base_url = 'https://ai-gateway.vercel.sh/typesafe'
 _model = 'typesafe-ai/jev'
-
-def get_key() -> str:
-    import os
-    api_key = os.getenv('AI_GATEWAY_API_KEY')
-    if api_key is None:
-        raise ValueError('Missing api key')
-    return api_key
 
 
 def main():
