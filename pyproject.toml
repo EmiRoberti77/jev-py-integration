@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "anthropic>=1.8.0",
+    "openai>=3.19.2",
     "python-dotenv>=1.2.3",
     "typesafe-sdk>=0.7.1",
 ]
