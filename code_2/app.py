@@ -1,5 +1,6 @@
-from config import get_jev_config, get_jev_key, get_llm_key
+from config import get_jev_config, get_jev_key, get_llm_key, LLM_TYPE
 from anthropic import Anthropic
+from openai import OpenAI
 from typesafe_sdk import Choice, Noul, TypeSafeClient
 from messages import TEST_TICKETS
 
@@ -18,7 +19,28 @@ QUESTIONS = {
     )
 }
 
-def handle(message:str, jev:TypeSafeClient, llm:Anthropic):
+def handle_reply(llm:OpenAI | Anthropic, message:str, tone:str='apologetic'):
+    msg = f'Write a {tone} reply to:\n\n{message}'
+    
+    if isinstance(llm, Anthropic):
+        r = llm.messages.create(
+            model='claude-sonnet-5',
+            max_tokens=400,
+            messages=[{'role':'user', 'content':msg}]
+        )
+        return r.content[0].text
+
+    if isinstance(llm, OpenAI):
+        r = llm.responses.create(
+            model='gpt-4.1-mini',
+            max_output_tokens=400,
+            input=msg
+        )
+        return r.output_text
+
+    raise TypeError('ERR: Unsupported LLM Type')
+
+def handle(message:str, jev:TypeSafeClient, llm:OpenAI | Anthropic) -> dict:
     r = jev.system_one(model=get_jev_config().model, state={'ticket':message}, questions=QUESTIONS)
     urgent = r.nouls['is_urgent'].noul
     angry = r.nouls['is_angry'].noul
@@ -26,15 +48,24 @@ def handle(message:str, jev:TypeSafeClient, llm:Anthropic):
     intent = r.choices['intent'].choice
     print(message)
     print('============')
-    print(f'{urgent=}', f'{angry=}', f'{human}')
+    print(f'{urgent=}', f'{angry=}', f'{human=}')
     print(f'{intent=}')
+    if intent == 'spam':
+        return {'action':'drop'}
 
-def main():
+    if urgent > 0.8 or angry > 0.8 or human > 0.7:
+        return {'action': 'reply', 'reply': handle_reply(llm=llm, message=message)}
+
+    return {'action': 'normal'}
+
+def main() -> None:
     jev = TypeSafeClient(api_key=get_jev_key(), base_url=get_jev_config().base_url)
-    llm = Anthropic(api_key=get_llm_key())
+    llm = OpenAI(api_key=get_llm_key(LLM_TYPE.OPENAI))
     for msg in TEST_TICKETS:
-        handle(msg, jev, llm)
-    return 0
+        action = handle(msg, jev, llm)
+        if action.get('action') == 'reply':
+            print('llm reply', action['reply'])
+    
 
 if __name__ == '__main__':
     main()
