@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "anthropic>=1.8.0",
     "python-dotenv>=1.2.3",
     "typesafe-sdk>=0.7.1",
 ]

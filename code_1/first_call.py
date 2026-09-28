@@ -1,8 +1,7 @@
 from typesafe_sdk import Noul, TypeSafeClient, Choice
 from config import get_key
 api_key = get_key()
-_base_url = 'https://ai-gateway.vercel.sh/typesafe'
-print(api_key)
+_base_url = 'https://api.typesafe.ai'
 client = TypeSafeClient(
     api_key=api_key,
     base_url=_base_url

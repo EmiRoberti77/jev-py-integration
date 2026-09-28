@@ -1,13 +1,12 @@
 from config import get_key
 from typesafe_sdk import Choice, Noul, TypeSafeClient
 
-_base_url = 'https://ai-gateway.vercel.sh/typesafe'
-_model = 'typesafe-ai/jev'
+_base_url = 'https://api.typesafe.ai'
+_model = 'jev-latest'
 
 
 def main():
     api_key = get_key()
-    print(api_key)
 
     with TypeSafeClient(
         api_key=api_key,
